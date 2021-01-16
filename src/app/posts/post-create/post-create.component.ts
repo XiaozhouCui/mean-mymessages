@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, EventEmitter, Output } from '@angular/core';
 
 @Component({
   selector: 'app-post-create',
@@ -6,8 +6,11 @@ import { Component } from '@angular/core';
   styleUrls: ['./post-create.component.css'],
 })
 export class PostCreateComponent {
-  enteredValue = '';
-  newPost = 'NO CONTENT';
+  enteredTitle = '';
+  enteredContent = '';
+  @Output() postCreated = new EventEmitter();
+
+  // newPost = 'NO CONTENT';
 
   // // one-way binding
   // onAddPost(postInput: HTMLTextAreaElement) {
@@ -17,6 +20,8 @@ export class PostCreateComponent {
 
   // 2-way binding
   onAddPost() {
-    this.newPost = this.enteredValue;
+    const post = { title: this.enteredTitle, content: this.enteredContent };
+    // send the post data in an event to parent component (app.component.html) for event binding
+    this.postCreated.emit(post); // "post" data will shown as $event in parent component
   }
 }

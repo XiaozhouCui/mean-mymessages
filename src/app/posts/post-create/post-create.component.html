@@ -1,15 +1,14 @@
 <mat-card>
   <mat-form-field>
-    <input matInput type="text">
+    <!-- 2-way binding: need to import FormsModule -->
+    <input matInput type="text" [(ngModel)]="enteredTitle">
   </mat-form-field>
   <mat-form-field>
     <!-- Property binding -->
     <!-- <textarea rows="6" [value]="newPost" #postInput></textarea> -->
-
-    <!-- 2-way binding: need to import FormsModule -->
-    <textarea matInput rows="6" [(ngModel)]="enteredValue"></textarea>
-    <!-- Event binding -->
+    <textarea matInput rows="6" [(ngModel)]="enteredContent"></textarea>
   </mat-form-field>
+  <!-- Event binding -->
   <button mat-raised-button color="accent" (click)="onAddPost()">Save Post</button>
 </mat-card>
 
