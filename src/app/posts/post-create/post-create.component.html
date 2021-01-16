@@ -1,10 +1,14 @@
-<!-- Property binding -->
-<!-- <textarea rows="6" [value]="newPost" #postInput></textarea> -->
+<mat-card>
+  <mat-form-field>
+    <!-- Property binding -->
+    <!-- <textarea rows="6" [value]="newPost" #postInput></textarea> -->
 
-<!-- 2-way binding: need to import FormsModule -->
-<textarea rows="6" [(ngModel)]="enteredValue"></textarea>
-<hr />
-<!-- Event binding -->
-<button (click)="onAddPost()">Save Post</button>
+    <!-- 2-way binding: need to import FormsModule -->
+    <textarea matInput rows="6" [(ngModel)]="enteredValue"></textarea>
+    <!-- Event binding -->
+  </mat-form-field>
+  <button mat-raised-button color="primary" (click)="onAddPost()">Save Post</button>
+</mat-card>
+
 <!-- String interpolation -->
 <p>{{ newPost }}</p>
