@@ -1,15 +1,31 @@
 <mat-card>
-  <mat-form-field>
-    <!-- 2-way binding: need to import FormsModule -->
-    <input matInput type="text" [(ngModel)]="enteredTitle">
-  </mat-form-field>
-  <mat-form-field>
-    <!-- Property binding -->
-    <!-- <textarea rows="6" [value]="newPost" #postInput></textarea> -->
-    <textarea matInput rows="6" [(ngModel)]="enteredContent"></textarea>
-  </mat-form-field>
-  <!-- Event binding -->
-  <button mat-raised-button color="accent" (click)="onAddPost()">Save Post</button>
+  <form (submit)="onAddPost(postForm)" #postForm="ngForm">
+    <mat-form-field>
+      <!-- 2-way binding: need to import FormsModule -->
+      <!-- <input matInput type="text" [(ngModel)]="enteredTitle" /> -->
+      <input
+        matInput
+        type="text"
+        name="title"
+        ngModel
+        required
+        minlength="3"
+        #title="ngModel"
+      />
+      <mat-error *ngIf="title.invalid">Please enter a post title</mat-error>
+    </mat-form-field>
+    <mat-form-field>
+      <!-- Property binding -->
+      <!-- <textarea rows="4" [value]="newPost" #postInput></textarea> -->
+      <!-- 2-way binding -->
+      <!-- <textarea matInput rows="6" [(ngModel)]="enteredContent"></textarea> -->
+      <textarea matInput rows="4" name="content" ngModel required #content="ngModel"></textarea>
+      <mat-error *ngIf="content.invalid">Please enter a post content</mat-error>
+    </mat-form-field>
+    <!-- Event binding -->
+    <!-- <button mat-raised-button color="accent" (click)="onAddPost()"> -->
+    <button mat-raised-button color="accent" type="submit">Save Post</button>
+  </form>
 </mat-card>
 
 <!-- String interpolation -->
