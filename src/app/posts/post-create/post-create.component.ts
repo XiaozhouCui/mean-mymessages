@@ -45,6 +45,8 @@ export class PostCreateComponent {
     // this.postCreated.emit(post); // "post" data will shown as $event in parent component
 
     // Dependency Injection: use addPost() method from service
-    this.postsService.addPost(form.value.title, form.value.content)
+    this.postsService.addPost(form.value.title, form.value.content);
+    // Once submitted, clear form inputs
+    form.resetForm();
   }
 }
