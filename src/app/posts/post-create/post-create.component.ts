@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Output } from '@angular/core';
-
+import { Post } from '../post.model';
 @Component({
   selector: 'app-post-create',
   templateUrl: './post-create.component.html',
@@ -8,7 +8,8 @@ import { Component, EventEmitter, Output } from '@angular/core';
 export class PostCreateComponent {
   enteredTitle = '';
   enteredContent = '';
-  @Output() postCreated = new EventEmitter();
+  // EventEmitter is generic type, data emitted will be "Post" type
+  @Output() postCreated = new EventEmitter<Post>();
 
   // newPost = 'NO CONTENT';
 
@@ -20,7 +21,11 @@ export class PostCreateComponent {
 
   // 2-way binding
   onAddPost() {
-    const post = { title: this.enteredTitle, content: this.enteredContent };
+    // implement Post interface
+    const post: Post = {
+      title: this.enteredTitle,
+      content: this.enteredContent,
+    };
     // send the post data in an event to parent component (app.component.html) for event binding
     this.postCreated.emit(post); // "post" data will shown as $event in parent component
   }
