@@ -22,8 +22,8 @@ export class PostListComponent implements OnInit, OnDestroy {
   // Dependency Injection: connect to the service upon init
   ngOnInit() {
     // getPosts() method is available from service
-    this.posts = this.postsService.getPosts(); // this will only get an empty array, need to add listener
-    // update this.posts using rxjs
+    this.postsService.getPosts(); // this will trigger HTTP request in service
+    // Render posts: update this.posts using rxjs
     this.postsSub = this.postsService
       .getPostUpdateListener()
       .subscribe((posts: Post[]) => {
