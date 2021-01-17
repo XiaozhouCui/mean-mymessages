@@ -1,3 +1,4 @@
+import { PostsService } from '../posts.service';
 import { Component, EventEmitter, Output } from '@angular/core';
 import { NgForm } from '@angular/forms';
 import { Post } from '../post.model';
@@ -7,10 +8,14 @@ import { Post } from '../post.model';
   styleUrls: ['./post-create.component.css'],
 })
 export class PostCreateComponent {
+  // Dependency Injection: add new instance of PostService class as a local property
+  constructor(public postsService: PostsService) {}
+
   enteredTitle = '';
   enteredContent = '';
-  // EventEmitter is generic type, data emitted will be "Post" type
-  @Output() postCreated = new EventEmitter<Post>();
+
+  // // Event Binding: EventEmitter is generic type, data emitted will be "Post" type
+  // @Output() postCreated = new EventEmitter<Post>();
 
   // newPost = 'NO CONTENT';
 
@@ -27,15 +32,19 @@ export class PostCreateComponent {
   //   this.postCreated.emit(post); // "post" data will shown as $event in parent component
   // }
 
-  // NgForm: reactive form
+  // NgForm approach
   onAddPost(form: NgForm) {
     if (form.invalid) return;
-    // implement Post interface
-    const post: Post = {
-      title: form.value.title,
-      content: form.value.content,
-    };
-    // send the post data in an event to parent component (app.component.html) for event binding
-    this.postCreated.emit(post); // "post" data will shown as $event in parent component
+
+    // // Event Binding
+    // const post: Post = {
+    //   title: form.value.title,
+    //   content: form.value.content,
+    // };
+    // // send the post data in an event to parent component (app.component.html)
+    // this.postCreated.emit(post); // "post" data will shown as $event in parent component
+
+    // Dependency Injection: use addPost() method from service
+    this.postsService.addPost(form.value.title, form.value.content)
   }
 }
