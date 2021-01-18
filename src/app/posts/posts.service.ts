@@ -32,8 +32,14 @@ export class PostsService {
 
   addPost(title: string, content: string) {
     const post: Post = { id: null, title, content };
-    this.posts.push(post);
-    // Subjects can actively trigger event, not like passive Observables
-    this.postsUpdated.next([...this.posts]); // Subject.next() will emit an event
+    this.http
+      .post<{ message: string }>('http://localhost:3000/api/posts', post)
+      .subscribe((res) => {
+        console.log(res.message);
+        // push to local state when post request is successful
+        this.posts.push(post);
+        // Subjects can actively trigger event, not like passive Observables
+        this.postsUpdated.next([...this.posts]); // Subject.next() will emit an event
+      });
   }
 }
