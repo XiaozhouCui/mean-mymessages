@@ -53,4 +53,12 @@ export class PostsService {
         this.postsUpdated.next([...this.posts]); // Subject.next() will emit an event
       });
   }
+
+  deletePost(postId: string) {
+    this.http
+      .delete('http://localhost:3000/api/posts/' + postId)
+      .subscribe(() => {
+        console.log('Deleted!');
+      });
+  }
 }
