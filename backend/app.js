@@ -25,9 +25,11 @@ app.post("/api/posts", async (req, res, next) => {
     title: req.body.title,
     content: req.body.content,
   });
-  await post.save();
+  const newPost = await post.save();
+  // console.log(newPost);
   res.status(201).json({
     message: "Post added successfully",
+    postId: newPost._id,
   });
 });
 
@@ -42,7 +44,7 @@ app.get("/api/posts", (req, res, next) => {
 
 app.delete("/api/posts/:id", (req, res, next) => {
   Post.deleteOne({ _id: req.params.id }).then((result) => {
-    console.log(result);
+    // console.log(result);
     res.status(200).json({ message: "Post deleted" });
   });
 });

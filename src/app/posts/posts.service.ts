@@ -44,9 +44,11 @@ export class PostsService {
   addPost(title: string, content: string) {
     const post: Post = { id: null, title, content };
     this.http
-      .post<{ message: string }>('http://localhost:3000/api/posts', post)
+      .post<{ message: string, postId: string }>('http://localhost:3000/api/posts', post)
       .subscribe((res) => {
-        console.log(res.message);
+        // grab new post's mongo ID from HTTP response
+        const id = res.postId;
+        post.id = id;
         // push to local state when post request is successful
         this.posts.push(post);
         // Subjects can actively trigger event, not like passive Observables
@@ -58,7 +60,9 @@ export class PostsService {
     this.http
       .delete('http://localhost:3000/api/posts/' + postId)
       .subscribe(() => {
-        console.log('Deleted!');
+        const updatedPosts = this.posts.filter((post) => post.id !== postId);
+        this.posts = updatedPosts;
+        this.postsUpdated.next([...this.posts]); // emit event from subject so whole app will know the updated posts
       });
   }
 }
