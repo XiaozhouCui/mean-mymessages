@@ -1,8 +1,14 @@
 const app = require("./backend/app");
 const debug = require("debug")("node-angular");
 const http = require("http");
+const dotenv = require("dotenv");
+const connectDB = require("./backend/config/db.js");
 
-const normalizePort = val => {
+dotenv.config();
+
+connectDB();
+
+const normalizePort = (val) => {
   var port = parseInt(val, 10);
 
   if (isNaN(port)) {
@@ -18,7 +24,7 @@ const normalizePort = val => {
   return false;
 };
 
-const onError = error => {
+const onError = (error) => {
   if (error.syscall !== "listen") {
     throw error;
   }
