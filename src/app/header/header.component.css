@@ -1,0 +1,15 @@
+a {
+  text-decoration: none;
+  color: white;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* spacer will push everything else to the right end */
+.spacer {
+  flex: 1 1 auto;
+}
