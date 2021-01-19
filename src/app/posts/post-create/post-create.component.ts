@@ -12,6 +12,7 @@ export class PostCreateComponent implements OnInit {
   enteredTitle = '';
   enteredContent = '';
   post: Post;
+  isLoading = false;
   private mode = 'create';
   private postId: string;
 
@@ -29,10 +30,12 @@ export class PostCreateComponent implements OnInit {
       if (paramMap.has('postId')) {
         this.mode = 'edit';
         this.postId = paramMap.get('postId');
+        this.isLoading = true;
         // // this.post is used to populate form values: [ngModel]="post.title"
         // this.post = this.postsService.getPost(this.postId);
         // getPost() will return an observable
         this.postsService.getPost(this.postId).subscribe((postData) => {
+          this.isLoading = false;
           this.post = {
             id: postData._id,
             title: postData.title,
@@ -68,6 +71,7 @@ export class PostCreateComponent implements OnInit {
   onSavePost(form: NgForm) {
     if (form.invalid) return;
 
+    this.isLoading = true; // show spinner before redirect to other pages
     if (this.mode === 'create') {
       // Dependency Injection: use addPost() method from service
       this.postsService.addPost(form.value.title, form.value.content);

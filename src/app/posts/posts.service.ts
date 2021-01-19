@@ -1,14 +1,16 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { Router } from '@angular/router';
 import { Subject } from 'rxjs';
 import { map } from 'rxjs/operators';
+
 import { Post } from './post.model';
 
 // Dependency Injection, make service available for entire app (root level)
 @Injectable({ providedIn: 'root' })
 export class PostsService {
-  // Inject HttpClient
-  constructor(private http: HttpClient) {}
+  // Inject HttpClient and Angular Router
+  constructor(private http: HttpClient, private router: Router) {}
 
   private posts: Post[] = [];
   // Subject is a special Observable, which can actively trigger event (next())
@@ -64,6 +66,8 @@ export class PostsService {
         this.posts.push(post);
         // Subjects can actively trigger event, not like passive Observables
         this.postsUpdated.next([...this.posts]); // Subject.next() will emit an event
+        // Redirect user back to posts list page with Angular Router
+        this.router.navigate(['/']);
       });
   }
 
@@ -78,6 +82,8 @@ export class PostsService {
         this.posts = updatedPosts;
         // emit event to send out updated posts array
         this.postsUpdated.next([...this.posts]);
+        // Redirect user back to posts list page with Angular Router
+        this.router.navigate(['/']);
       });
   }
 

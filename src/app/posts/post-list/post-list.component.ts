@@ -17,16 +17,19 @@ export class PostListComponent implements OnInit, OnDestroy {
   // @Input() posts: Post[] = [];
 
   posts: Post[] = [];
+  isLoading = false;
   private postsSub: Subscription;
 
   // Dependency Injection: connect to the service upon init
   ngOnInit() {
+    this.isLoading = true;
     // getPosts() method is available from service
     this.postsService.getPosts(); // this will trigger HTTP request in service
     // Render posts: update this.posts using rxjs
     this.postsSub = this.postsService
       .getPostUpdateListener()
       .subscribe((posts: Post[]) => {
+        this.isLoading = false;
         this.posts = posts;
       });
   }
