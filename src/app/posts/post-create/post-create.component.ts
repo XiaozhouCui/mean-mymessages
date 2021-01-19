@@ -57,8 +57,20 @@ export class PostCreateComponent implements OnInit {
   // }
 
   // NgForm approach
-  onAddPost(form: NgForm) {
+  onSavePost(form: NgForm) {
     if (form.invalid) return;
+
+    if (this.mode === 'create') {
+      // Dependency Injection: use addPost() method from service
+      this.postsService.addPost(form.value.title, form.value.content);
+    } else {
+      // update post using service + DI
+      this.postsService.updatePost(
+        this.postId,
+        form.value.title,
+        form.value.content
+      );
+    }
 
     // // Event Binding
     // const post: Post = {
@@ -68,8 +80,6 @@ export class PostCreateComponent implements OnInit {
     // // send the post data in an event to parent component (app.component.html)
     // this.postCreated.emit(post); // "post" data will shown as $event in parent component
 
-    // Dependency Injection: use addPost() method from service
-    this.postsService.addPost(form.value.title, form.value.content);
     // Once submitted, clear form inputs
     form.resetForm();
   }
