@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Subject } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { Post } from './post.model';
 
 // Dependency Injection, make service available for entire app (root level)
@@ -13,15 +14,25 @@ export class PostsService {
   // Subject is a special Observable, which can actively trigger event (next())
   private postsUpdated = new Subject<Post[]>(); // need to listen to this subject for emitted events
 
+  // send HTTP request using injected HttpClient
   getPosts() {
-    // send HTTP request using injected HttpClient
+    // HttpClient uses RxJs, http.get() returns an observable, need to subscribe
     this.http
-      .get<{ message: string; posts: Post[] }>(
-        'http://localhost:3000/api/posts'
+      .get<{ message: string; posts: any }>('http://localhost:3000/api/posts')
+      // transform post data to include "_id" from mongodb
+      .pipe(
+        map((postData) => {
+          return postData.posts.map((post) => {
+            return {
+              title: post.title,
+              content: post.content,
+              id: post._id,
+            };
+          });
+        })
       )
-      // HttpClient uses RxJs, http.get() returns an observable, need to subscribe
-      .subscribe((postData) => {
-        this.posts = postData.posts;
+      .subscribe((transformedPosts) => {
+        this.posts = transformedPosts;
         this.postsUpdated.next([...this.posts]);
       });
   }
