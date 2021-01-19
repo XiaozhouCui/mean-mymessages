@@ -1,18 +1,42 @@
 import { PostsService } from '../posts.service';
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, EventEmitter, Output, OnInit } from '@angular/core';
 import { NgForm } from '@angular/forms';
 import { Post } from '../post.model';
+import { ActivatedRoute, ParamMap } from '@angular/router';
 @Component({
   selector: 'app-post-create',
   templateUrl: './post-create.component.html',
   styleUrls: ['./post-create.component.css'],
 })
-export class PostCreateComponent {
-  // Dependency Injection: add new instance of PostService class as a local property
-  constructor(public postsService: PostsService) {}
-
+export class PostCreateComponent implements OnInit {
   enteredTitle = '';
   enteredContent = '';
+  post: Post;
+  private mode = 'create';
+  private postId: string;
+
+  // Dependency Injection: add new instance of PostService class as a local property
+  // Dependency Injection: add new instance of ActivatedRoute class as a local property
+  constructor(
+    public postsService: PostsService,
+    public route: ActivatedRoute
+  ) {}
+
+  ngOnInit() {
+    // ActivatedRoute can listen to changes in URL routes
+    this.route.paramMap.subscribe((paramMap: ParamMap) => {
+      // use observable paramMap to check wether this page is "/create" or "/edit/:postId"
+      if (paramMap.has('postId')) {
+        this.mode = 'edit';
+        this.postId = paramMap.get('postId');
+        // this.post is used to populate form values: [ngModel]="post.title"
+        this.post = this.postsService.getPost(this.postId);
+      } else {
+        this.mode = 'create';
+        this.postId = null;
+      }
+    });
+  }
 
   // // Event Binding: EventEmitter is generic type, data emitted will be "Post" type
   // @Output() postCreated = new EventEmitter<Post>();
