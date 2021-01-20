@@ -27,17 +27,22 @@ const storage = multer.diskStorage({
   },
 });
 
-// multer(storage).single("image") will extract a fime form req.body.image
-router.post("", multer(storage).single("image"), async (req, res, next) => {
+// multer({storage}).single("image") will extract a fime form req.body.image
+router.post("", multer({ storage }).single("image"), async (req, res, next) => {
+  const url = `${req.protocol}://${req.get("host")}`;
   const post = new Post({
     title: req.body.title,
     content: req.body.content,
+    imagePath: `${url}/images/${req.file.filename}`,
   });
   const newPost = await post.save();
   // console.log(newPost);
   res.status(201).json({
     message: "Post added successfully",
-    postId: newPost._id,
+    post: {
+      ...newPost,
+      id: newPost._id,
+    },
   });
 });
 

@@ -29,6 +29,7 @@ export class PostsService {
               title: post.title,
               content: post.content,
               id: post._id,
+              imagePath: post.imagePath,
             };
           });
         })
@@ -51,17 +52,28 @@ export class PostsService {
     );
   }
 
-  addPost(title: string, content: string) {
-    const post: Post = { id: null, title, content };
+  addPost(title: string, content: string, image: File) {
+    // const post: Post = { id: null, title, content }; // json can't handle files
+    const postData = new FormData();
+    postData.append('title', title);
+    postData.append('content', content);
+    postData.append('image', image, title);
     this.http
-      .post<{ message: string; postId: string }>(
+      .post<{ message: string; post: Post }>(
         'http://localhost:3000/api/posts',
-        post
+        postData
       )
       .subscribe((res) => {
-        // grab new post's mongo ID from HTTP response
-        const id = res.postId;
-        post.id = id;
+        // api will return imagePath
+        const post: Post = {
+          id: res.post.id,
+          title,
+          content,
+          imagePath: res.post.imagePath,
+        };
+        // // grab new post's mongo ID from HTTP response
+        // const id = res.postId;
+        // post.id = id;
         // push to local state when post request is successful
         this.posts.push(post);
         // Subjects can actively trigger event, not like passive Observables
@@ -72,7 +84,7 @@ export class PostsService {
   }
 
   updatePost(id: string, title: string, content: string) {
-    const post: Post = { id, title, content };
+    const post: Post = { id, title, content, imagePath: null };
     this.http
       .put('http://localhost:3000/api/posts/' + id, post)
       .subscribe((response) => {
