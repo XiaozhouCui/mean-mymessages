@@ -13,7 +13,7 @@ export class PostCreateComponent implements OnInit {
   enteredContent = '';
   post: Post;
   isLoading = false;
-  form: FormGroup;
+  form: FormGroup; // reactive form instance
   private mode = 'create';
   private postId: string;
 
@@ -25,11 +25,15 @@ export class PostCreateComponent implements OnInit {
   ) {}
 
   ngOnInit() {
+    // reactive form
     this.form = new FormGroup({
       title: new FormControl(null, {
         validators: [Validators.required, Validators.minLength(3)],
       }),
       content: new FormControl(null, {
+        validators: [Validators.required],
+      }),
+      image: new FormControl(null, {
         validators: [Validators.required],
       }),
     });
@@ -81,7 +85,19 @@ export class PostCreateComponent implements OnInit {
   //   this.postCreated.emit(post); // "post" data will shown as $event in parent component
   // }
 
-  // NgForm approach
+  // Reactive Form approach
+
+  onImagePicked(event: Event) {
+    // type conversion to HTML Intput Element
+    const file = (event.target as HTMLInputElement).files[0];
+    // patch FormGroup with a file object
+    this.form.patchValue({ image: file });
+    // recalculate FormGroup value
+    this.form.get('image').updateValueAndValidity();
+    console.log(file);
+    console.log(this.form);
+  }
+
   onSavePost() {
     if (this.form.invalid) return;
 
