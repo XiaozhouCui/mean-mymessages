@@ -3,6 +3,7 @@ import { Component, EventEmitter, Output, OnInit } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Post } from '../post.model';
 import { ActivatedRoute, ParamMap } from '@angular/router';
+import { mimeType } from './mime-type.validator';
 @Component({
   selector: 'app-post-create',
   templateUrl: './post-create.component.html',
@@ -36,6 +37,7 @@ export class PostCreateComponent implements OnInit {
       }),
       image: new FormControl(null, {
         validators: [Validators.required],
+        asyncValidators: [mimeType], // only accept .jpg .png .gif...
       }),
     });
     // ActivatedRoute can listen to changes in URL routes
@@ -98,8 +100,9 @@ export class PostCreateComponent implements OnInit {
     // convert image to data url, for <img/> preview
     const reader = new FileReader();
     reader.onload = () => {
+      // reading file is async process
       this.imagePreview = reader.result as string;
-    }
+    };
     reader.readAsDataURL(file);
   }
 
