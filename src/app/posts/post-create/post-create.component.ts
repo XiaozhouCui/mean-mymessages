@@ -1,6 +1,6 @@
 import { PostsService } from '../posts.service';
 import { Component, EventEmitter, Output, OnInit } from '@angular/core';
-import { NgForm } from '@angular/forms';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Post } from '../post.model';
 import { ActivatedRoute, ParamMap } from '@angular/router';
 @Component({
@@ -13,6 +13,7 @@ export class PostCreateComponent implements OnInit {
   enteredContent = '';
   post: Post;
   isLoading = false;
+  form: FormGroup;
   private mode = 'create';
   private postId: string;
 
@@ -24,6 +25,14 @@ export class PostCreateComponent implements OnInit {
   ) {}
 
   ngOnInit() {
+    this.form = new FormGroup({
+      title: new FormControl(null, {
+        validators: [Validators.required, Validators.minLength(3)],
+      }),
+      content: new FormControl(null, {
+        validators: [Validators.required],
+      }),
+    });
     // ActivatedRoute can listen to changes in URL routes
     this.route.paramMap.subscribe((paramMap: ParamMap) => {
       // use observable paramMap to check wether this page is "/create" or "/edit/:postId"
@@ -41,6 +50,11 @@ export class PostCreateComponent implements OnInit {
             title: postData.title,
             content: postData.content,
           };
+          // Reactive form set values
+          this.form.setValue({
+            title: this.post.title,
+            content: this.post.content,
+          });
         });
       } else {
         this.mode = 'create';
@@ -68,19 +82,19 @@ export class PostCreateComponent implements OnInit {
   // }
 
   // NgForm approach
-  onSavePost(form: NgForm) {
-    if (form.invalid) return;
+  onSavePost() {
+    if (this.form.invalid) return;
 
     this.isLoading = true; // show spinner before redirect to other pages
     if (this.mode === 'create') {
       // Dependency Injection: use addPost() method from service
-      this.postsService.addPost(form.value.title, form.value.content);
+      this.postsService.addPost(this.form.value.title, this.form.value.content);
     } else {
       // update post using service + DI
       this.postsService.updatePost(
         this.postId,
-        form.value.title,
-        form.value.content
+        this.form.value.title,
+        this.form.value.content
       );
     }
 
@@ -93,6 +107,6 @@ export class PostCreateComponent implements OnInit {
     // this.postCreated.emit(post); // "post" data will shown as $event in parent component
 
     // Once submitted, clear form inputs
-    form.resetForm();
+    this.form.reset();
   }
 }
