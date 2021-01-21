@@ -48,18 +48,25 @@ router.post("", multer({ storage }).single("image"), async (req, res, next) => {
 
 router.get("", (req, res, next) => {
   // backend pagination
-  const pagesize = parseInt(req.query.pagesize);
+  const pageSize = parseInt(req.query.pagesize);
   const currentPage = parseInt(req.query.page);
   const postQuery = Post.find();
-  if (pagesize && currentPage) {
-    postQuery.skip(pagesize * (currentPage - 1)).limit(pagesize);
+  let fetchedPosts;
+  if (pageSize && currentPage) {
+    postQuery.skip(pageSize * (currentPage - 1)).limit(pageSize);
   }
-  postQuery.then((posts) => {
-    res.status(200).json({
-      message: "Posts fetched successfully!",
-      posts: posts,
+  postQuery
+    .then((posts) => {
+      fetchedPosts = posts;
+      return Post.countDocuments();
+    })
+    .then((count) => {
+      res.status(200).json({
+        message: "Posts fetched successfully!",
+        posts: fetchedPosts,
+        maxPosts: count,
+      });
     });
-  });
 });
 
 router.get("/:id", (req, res, next) => {

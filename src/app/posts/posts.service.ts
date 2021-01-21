@@ -14,29 +14,38 @@ export class PostsService {
 
   private posts: Post[] = [];
   // Subject is a special Observable, which can actively trigger event (next())
-  private postsUpdated = new Subject<Post[]>(); // need to listen to this subject for emitted events
+  private postsUpdated = new Subject<{ posts: Post[]; postCount: number }>(); // need to listen to this subject for emitted events
 
   // send HTTP request using injected HttpClient
-  getPosts() {
-    // HttpClient uses RxJs, http.get() returns an observable, need to subscribe
+  getPosts(postsPerPage: number, currentPage: number) {
+    const queryParams = `?pagesize=${postsPerPage}&page=${currentPage}`;
+    // HttpClient uses RxJS, http.get() returns an observable, need to subscribe
     this.http
-      .get<{ message: string; posts: any }>('http://localhost:3000/api/posts')
+      .get<{ message: string; posts: any; maxPosts: number }>(
+        'http://localhost:3000/api/posts' + queryParams
+      )
       // transform post data to include "_id" from mongodb
       .pipe(
         map((postData) => {
-          return postData.posts.map((post) => {
-            return {
-              title: post.title,
-              content: post.content,
-              id: post._id,
-              imagePath: post.imagePath,
-            };
-          });
+          return {
+            posts: postData.posts.map((post) => {
+              return {
+                title: post.title,
+                content: post.content,
+                id: post._id,
+                imagePath: post.imagePath,
+              };
+            }),
+            maxPosts: postData.maxPosts,
+          };
         })
       )
-      .subscribe((transformedPosts) => {
-        this.posts = transformedPosts;
-        this.postsUpdated.next([...this.posts]);
+      .subscribe((transformedPostData) => {
+        this.posts = transformedPostData.posts;
+        this.postsUpdated.next({
+          posts: [...this.posts],
+          postCount: transformedPostData.maxPosts,
+        });
       });
   }
 
@@ -47,9 +56,12 @@ export class PostsService {
   // get a single post by ID to populate edit form values
   getPost(id: string) {
     // return an observable, to be subscribed later
-    return this.http.get<{ _id: string; title: string; content: string, imagePath: string }>(
-      'http://localhost:3000/api/posts/' + id
-    );
+    return this.http.get<{
+      _id: string;
+      title: string;
+      content: string;
+      imagePath: string;
+    }>('http://localhost:3000/api/posts/' + id);
   }
 
   addPost(title: string, content: string, image: File) {
@@ -64,20 +76,22 @@ export class PostsService {
         postData
       )
       .subscribe((res) => {
-        // api will return imagePath
-        const post: Post = {
-          id: res.post.id,
-          title,
-          content,
-          imagePath: res.post.imagePath,
-        };
-        // // grab new post's mongo ID from HTTP response
-        // const id = res.postId;
-        // post.id = id;
-        // push to local state when post request is successful
-        this.posts.push(post);
-        // Subjects can actively trigger event, not like passive Observables
-        this.postsUpdated.next([...this.posts]); // Subject.next() will emit an event
+        // // foloowing code removed because posts were fetched with ngOnInit in post-list component
+        // // api will return imagePath
+        // const post: Post = {
+        //   id: res.post.id,
+        //   title,
+        //   content,
+        //   imagePath: res.post.imagePath,
+        // };
+        // // // grab new post's mongo ID from HTTP response
+        // // const id = res.postId;
+        // // post.id = id;
+        // // push to local state when post request is successful
+        // this.posts.push(post);
+        // // Subjects can actively trigger event, not like passive Observables
+        // this.postsUpdated.next([...this.posts]); // Subject.next() will emit an event
+
         // Redirect user back to posts list page with Angular Router
         this.router.navigate(['/']);
       });
@@ -98,25 +112,27 @@ export class PostsService {
     this.http
       .put('http://localhost:3000/api/posts/' + id, postData)
       .subscribe((response) => {
-        const updatedPosts = [...this.posts];
-        const oldPostIndex = updatedPosts.findIndex((p) => p.id === id);
-        const post: Post = { id, title, content, imagePath:"" };
-        updatedPosts[oldPostIndex] = post;
-        this.posts = updatedPosts;
-        // emit event to send out updated posts array
-        this.postsUpdated.next([...this.posts]);
+        // // foloowing code removed because posts were fetched with ngOnInit in post-list component
+        // const updatedPosts = [...this.posts];
+        // const oldPostIndex = updatedPosts.findIndex((p) => p.id === id);
+        // const post: Post = { id, title, content, imagePath: '' };
+        // updatedPosts[oldPostIndex] = post;
+        // this.posts = updatedPosts;
+        // // emit event to send out updated posts array
+        // this.postsUpdated.next([...this.posts]);
+
         // Redirect user back to posts list page with Angular Router
         this.router.navigate(['/']);
       });
   }
 
   deletePost(postId: string) {
-    this.http
-      .delete('http://localhost:3000/api/posts/' + postId)
-      .subscribe(() => {
-        const updatedPosts = this.posts.filter((post) => post.id !== postId);
-        this.posts = updatedPosts;
-        this.postsUpdated.next([...this.posts]); // emit event from subject so whole app will know the updated posts
-      });
+    return this.http.delete('http://localhost:3000/api/posts/' + postId);
+    // // foloowing code removed because the observable is subscribed in post-list.component onDelete()
+    // .subscribe(() => {
+    //   const updatedPosts = this.posts.filter((post) => post.id !== postId);
+    //   this.posts = updatedPosts;
+    //   this.postsUpdated.next([...this.posts]); // emit event from subject so whole app will know the updated posts
+    // });
   }
 }
