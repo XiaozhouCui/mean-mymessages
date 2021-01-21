@@ -47,7 +47,14 @@ router.post("", multer({ storage }).single("image"), async (req, res, next) => {
 });
 
 router.get("", (req, res, next) => {
-  Post.find().then((posts) => {
+  // backend pagination
+  const pagesize = parseInt(req.query.pagesize);
+  const currentPage = parseInt(req.query.page);
+  const postQuery = Post.find();
+  if (pagesize && currentPage) {
+    postQuery.skip(pagesize * (currentPage - 1)).limit(pagesize);
+  }
+  postQuery.then((posts) => {
     res.status(200).json({
       message: "Posts fetched successfully!",
       posts: posts,
