@@ -1,9 +1,13 @@
 import { AbstractControl } from '@angular/forms';
-import { Observable, Observer } from 'rxjs';
+import { Observable, Observer, of } from 'rxjs';
 
 export const mimeType = (
   control: AbstractControl
 ): Promise<{ [key: string]: any }> | Observable<{ [key: string]: any }> => {
+  if (typeof control.value === 'string') {
+    // "of(null)" returns an observable that will immediately emit data "null", meaning it is VALID
+    return of(null);
+  }
   const file = control.value as File;
   const fileReader = new FileReader();
   // convert sync code (fileReader.onloadend) into an observable
@@ -12,7 +16,10 @@ export const mimeType = (
       // param observer controls when the observable will emit data
       fileReader.addEventListener('loadend', () => {
         // mime type validation starts here
-        const arr = new Uint8Array(fileReader.result as ArrayBuffer).subarray(0,4);
+        const arr = new Uint8Array(fileReader.result as ArrayBuffer).subarray(
+          0,
+          4
+        );
         let header = '';
         let isValid = false;
         for (let i = 0; i < arr.length; i++) {

@@ -65,21 +65,27 @@ router.get("/:id", (req, res, next) => {
   });
 });
 
-router.put("/:id", (req, res, next) => {
+router.put("/:id", multer({ storage }).single("image"), (req, res, next) => {
+  // in default update, no file is uploaded, only an image url string
+  let imagePath = req.body.imagePath;
+  // if a file (not a url string) is included,
+  if (req.file) {
+    const url = `${req.protocol}://${req.get("host")}`;
+    imagePath = `${url}/images/${req.file.filename}`;
+  }
   const post = new Post({
     _id: req.body.id,
     title: req.body.title,
     content: req.body.content,
+    imagePath,
   });
   Post.updateOne({ _id: req.params.id }, post).then((result) => {
-    // console.log(result);
     res.status(200).json({ message: "Update successful" });
   });
 });
 
 router.delete("/:id", (req, res, next) => {
   Post.deleteOne({ _id: req.params.id }).then((result) => {
-    // console.log(result);
     res.status(200).json({ message: "Post deleted" });
   });
 });
