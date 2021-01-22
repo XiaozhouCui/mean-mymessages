@@ -9,6 +9,6 @@ export class LoginComponent {
   isLoading = false;
 
   onLogin(form: NgForm) {
-    console.log(form.value);
+    console.log(form.value); // {username: "asdf", password: "asdf"}
   }
 }
