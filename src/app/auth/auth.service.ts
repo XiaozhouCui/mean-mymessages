@@ -6,6 +6,12 @@ import { AuthData } from './auth-data.model';
 export class AuthService {
   constructor(private http: HttpClient) {}
 
+  private token: string;
+
+  getToken() {
+    return this.token;
+  }
+
   createUser(email: string, password: string) {
     const authData: AuthData = { email, password };
     this.http
@@ -18,9 +24,10 @@ export class AuthService {
   login(email: string, password: string) {
     const authData: AuthData = { email, password };
     this.http
-      .post('http://localhost:3000/api/user/login', authData)
+      .post<{ token: string }>('http://localhost:3000/api/user/login', authData)
       .subscribe((response) => {
-        console.log(response);
+        // console.log(response); // {token: "ufjkwqnepoirvcoiu"}
+        this.token = response.token;
       });
   }
 }
