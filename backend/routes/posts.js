@@ -1,5 +1,6 @@
 const express = require("express");
 const multer = require("multer");
+const checkAuth = require("../middleware/check-auth")
 
 const Post = require("../models/post");
 
@@ -28,7 +29,7 @@ const storage = multer.diskStorage({
 });
 
 // multer({storage}).single("image") will extract a fime form req.body.image
-router.post("", multer({ storage }).single("image"), async (req, res, next) => {
+router.post("", checkAuth, multer({ storage }).single("image"), async (req, res, next) => {
   const url = `${req.protocol}://${req.get("host")}`;
   const post = new Post({
     title: req.body.title,
@@ -79,7 +80,7 @@ router.get("/:id", (req, res, next) => {
   });
 });
 
-router.put("/:id", multer({ storage }).single("image"), (req, res, next) => {
+router.put("/:id", checkAuth, multer({ storage }).single("image"), (req, res, next) => {
   // in default update, no file is uploaded, only an image url string
   let imagePath = req.body.imagePath;
   // if a file (not a url string) is included,
@@ -98,7 +99,7 @@ router.put("/:id", multer({ storage }).single("image"), (req, res, next) => {
   });
 });
 
-router.delete("/:id", (req, res, next) => {
+router.delete("/:id", checkAuth, (req, res, next) => {
   Post.deleteOne({ _id: req.params.id }).then((result) => {
     res.status(200).json({ message: "Post deleted" });
   });
