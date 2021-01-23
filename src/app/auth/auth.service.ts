@@ -1,11 +1,12 @@
-import { Subject } from 'rxjs';
-import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Router } from '@angular/router';
+import { Subject } from 'rxjs';
 import { AuthData } from './auth-data.model';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private router: Router) {}
 
   private isAuthenticated = false;
   private token: string; // store jwt from api
@@ -22,7 +23,7 @@ export class AuthService {
   // getter will only return an observable, not a subject
   getAuthStatusListener() {
     // asObservable: so that other components CANNOT emit new values, only this service (Subject) can emit
-    return this.authStatusListener.asObservable()
+    return this.authStatusListener.asObservable();
   }
 
   createUser(email: string, password: string) {
@@ -44,6 +45,8 @@ export class AuthService {
         if (response.token) {
           this.authStatusListener.next(true); // emit logged-in status to other components (e.g. header)
           this.isAuthenticated = true;
+          // redirect upon login, using injected Router
+          this.router.navigate(['/']);
         }
       });
   }
@@ -52,5 +55,6 @@ export class AuthService {
     this.token = null; // clear token
     this.isAuthenticated = false; // toggle status
     this.authStatusListener.next(false); // push false value to other components
+    this.router.navigate(['/']); // redirect to home page after log out
   }
 }
