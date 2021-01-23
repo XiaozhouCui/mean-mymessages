@@ -28,12 +28,14 @@ router.post("/signup", (req, res, next) => {
 });
 
 router.post("/login", (req, res, next) => {
+  let fetchedUser;
   // check if user exists
-  User.find({ email: req.body.email })
+  User.findOne({ email: req.body.email })
     .then((user) => {
       if (!user) {
         return res.status(401).json({ message: "Invalid email or password" });
       }
+      fetchedUser = user;
       return bcrypt.compare(req.body.password, user.password);
     })
     .then((result) => {
@@ -41,13 +43,14 @@ router.post("/login", (req, res, next) => {
         return res.status(401).json({ message: "Invalid email or password" });
       }
       const token = jwt.sign(
-        { email: user.email, userId: user._id },
+        { email: fetchedUser.email, userId: fetchedUser._id },
         process.env.JWT_SECRET,
         { expiresIn: "12h" }
       );
       res.status(200).json({ token });
     })
     .catch((err) => {
+      console.log(err)
       return res.status(401).json({ message: "Auth failed" });
     });
 });
