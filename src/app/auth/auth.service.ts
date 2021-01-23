@@ -7,11 +7,16 @@ import { AuthData } from './auth-data.model';
 export class AuthService {
   constructor(private http: HttpClient) {}
 
+  private isAuthenticated = false;
   private token: string; // store jwt from api
   private authStatusListener = new Subject<boolean>(); // push login status to other components
 
   getToken() {
     return this.token;
+  }
+
+  getIsAuth() {
+    return this.isAuthenticated;
   }
 
   // getter will only return an observable, not a subject
@@ -36,7 +41,10 @@ export class AuthService {
       .subscribe((response) => {
         // console.log(response); // {token: "ufjkwqnepoirvcoiu"}
         this.token = response.token; // store token to be added in auth header
-        this.authStatusListener.next(true); // emit logged-in status to other components (e.g. header)
+        if (response.token) {
+          this.authStatusListener.next(true); // emit logged-in status to other components (e.g. header)
+          this.isAuthenticated = true;
+        }
       });
   }
 }
