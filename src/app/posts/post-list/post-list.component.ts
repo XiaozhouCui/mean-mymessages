@@ -28,6 +28,7 @@ export class PostListComponent implements OnInit, OnDestroy {
   currentPage = 1;
   pageSizeOptions = [1, 2, 5, 10];
   userIsAuthenticated: boolean = false; // logged-in status to be used in template
+  userId: string; // used for user authorisation in template
   private postsSub: Subscription;
   private authStatusSub: Subscription;
 
@@ -36,6 +37,7 @@ export class PostListComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     // getPosts() method is available from service
     this.postsService.getPosts(this.postsPerPage, this.currentPage); // this will trigger HTTP request in service
+    this.userId = this.authService.getUserId();
     // Render posts: update this.posts using rxjs
     this.postsSub = this.postsService
       .getPostUpdateListener()
@@ -49,9 +51,12 @@ export class PostListComponent implements OnInit, OnDestroy {
     // .getAuthStatusListener() will return an observable, subscribe to get login status "true" or "false"
     this.authStatusSub = this.authService
       .getAuthStatusListener()
+      // listen to events for login, logout and switching users
       .subscribe((isAuthenticated) => {
         // store the login status in local public veriable
         this.userIsAuthenticated = isAuthenticated;
+        // update user ID in template for *ngIf
+        this.userId = this.authService.getUserId();
       });
   }
 
