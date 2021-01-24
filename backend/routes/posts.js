@@ -104,16 +104,27 @@ router.put(
       content: req.body.content,
       imagePath,
     });
-    Post.updateOne({ _id: req.params.id }, post).then((result) => {
-      res.status(200).json({ message: "Update successful" });
+    // only select the post created by the requesting user
+    Post.updateOne(
+      { _id: req.params.id, creator: req.userData.userId },
+      post
+    ).then((result) => {
+      if (result.nModified > 0)
+        return res.status(200).json({ message: "Update successful" });
+      return res.status(401).json({ message: "Not authorised" });
     });
   }
 );
 
 router.delete("/:id", checkAuth, (req, res, next) => {
-  Post.deleteOne({ _id: req.params.id }).then((result) => {
-    res.status(200).json({ message: "Post deleted" });
-  });
+  // only the user who create the post can delete it
+  Post.deleteOne({ _id: req.params.id, creator: req.userData.userId }).then(
+    (result) => {
+      if (result.n > 0)
+        return res.status(201).json({ message: "Delete successful" });
+      return res.status(401).json({ message: "Not authorised" });
+    }
+  );
 });
 
 module.exports = router;
