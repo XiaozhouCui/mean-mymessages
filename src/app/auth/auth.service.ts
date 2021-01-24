@@ -39,23 +39,44 @@ export class AuthService {
   login(email: string, password: string) {
     const authData: AuthData = { email, password };
     this.http
-      .post<{ token: string, expiresIn: number }>('http://localhost:3000/api/user/login', authData)
+      .post<{ token: string; expiresIn: number }>(
+        'http://localhost:3000/api/user/login',
+        authData
+      )
       .subscribe((response) => {
         // console.log(response); // {token: "ufjkwqnepoirvcoiu"}
-        this.token = response.token; // store token to be added in auth header
-        if (response.token) {
+        const token = response.token;
+        this.token = token; // store token to be added in auth header
+        if (token) {
           const expiresInDuration = response.expiresIn;
           // console.log(expiresInDuration); // 43200 (12 hours)
-          this.tokenTimer = setTimeout(() => {
-            // automatically logout after 12 hours
-            this.logout();
-          }, expiresInDuration * 1000)
-          this.authStatusListener.next(true); // emit logged-in status to other components (e.g. header)
+          this.setAuthTimer(expiresInDuration); // auto logout after 12 hours
           this.isAuthenticated = true;
+          this.authStatusListener.next(true); // push logged-in status to other components (e.g. header)
+          const expirationDate = new Date(
+            Date.now() + expiresInDuration * 1000
+          );
+          // save to local storage
+          this.saveAuthData(token, expirationDate);
           // redirect upon login, using injected Router
           this.router.navigate(['/']);
         }
       });
+  }
+
+  autoAuthUser() {
+    // get token and expiration from local storage
+    const authInformation = this.getAuthData();
+    if (!authInformation) return;
+    // check if token has expired
+    const expiresIn = authInformation.expirationDate.getTime() - Date.now(); // milliseconds
+    // if not expired, log user in and push logged-in status to other components
+    if (expiresIn > 0) {
+      this.token = authInformation.token;
+      this.isAuthenticated = true;
+      this.setAuthTimer(expiresIn / 1000); // auto logout after 12 hours
+      this.authStatusListener.next(true); // subject can emit "true"
+    }
   }
 
   logout() {
@@ -63,6 +84,36 @@ export class AuthService {
     this.isAuthenticated = false; // toggle status
     this.authStatusListener.next(false); // push false value to other components
     clearTimeout(this.tokenTimer); // clear the 12h timer for auto-logout
+    this.clearAuthData(); // clear local storage
     this.router.navigate(['/']); // redirect to home page after log out
+  }
+
+  private setAuthTimer(duration: number) {
+    console.log(`Token expires in: ${duration} seconds`);
+    this.tokenTimer = setTimeout(() => {
+      // automatically logout after [duration] seconds
+      this.logout();
+    }, duration * 1000);
+  }
+
+  private saveAuthData(token: string, expirationDate: Date) {
+    localStorage.setItem('token', token);
+    localStorage.setItem('expiration', expirationDate.toISOString()); // "2021-01-24T00:52:29.082Z"
+  }
+
+  private clearAuthData() {
+    localStorage.removeItem('token');
+    localStorage.removeItem('expiration');
+  }
+
+  private getAuthData() {
+    const token = localStorage.getItem('token');
+    const expirationDate = localStorage.getItem('expiration');
+    if (!token || !expirationDate) return;
+    return {
+      token,
+      // convert ISO string to Date object
+      expirationDate: new Date(expirationDate),
+    };
   }
 }

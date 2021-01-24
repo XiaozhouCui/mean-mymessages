@@ -15,6 +15,8 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   // Injected authService can push logged-in status to header component
   ngOnInit(): void {
+    // check if auto logged-in
+    this.userIsAuthenticated = this.authService.getIsAuth();
     // subscribe to the injected observable (.getAuthStatusListener()) to get logged-in status
     this.authListenerSubs = this.authService
       .getAuthStatusListener()
