@@ -1,6 +1,6 @@
 const express = require("express");
 const multer = require("multer");
-const checkAuth = require("../middleware/check-auth")
+const checkAuth = require("../middleware/check-auth");
 
 const Post = require("../models/post");
 
@@ -29,23 +29,29 @@ const storage = multer.diskStorage({
 });
 
 // multer({storage}).single("image") will extract a fime form req.body.image
-router.post("", checkAuth, multer({ storage }).single("image"), async (req, res, next) => {
-  const url = `${req.protocol}://${req.get("host")}`;
-  const post = new Post({
-    title: req.body.title,
-    content: req.body.content,
-    imagePath: `${url}/images/${req.file.filename}`,
-  });
-  const newPost = await post.save();
-  // console.log(newPost);
-  res.status(201).json({
-    message: "Post added successfully",
-    post: {
-      ...newPost,
-      id: newPost._id,
-    },
-  });
-});
+router.post(
+  "",
+  checkAuth,
+  multer({ storage }).single("image"),
+  async (req, res, next) => {
+    const url = `${req.protocol}://${req.get("host")}`;
+    const post = new Post({
+      title: req.body.title,
+      content: req.body.content,
+      imagePath: `${url}/images/${req.file.filename}`,
+      creator: req.userData.userId, // req.userData was added in checkAuth middleware
+    });
+    const newPost = await post.save();
+    // console.log(newPost);
+    res.status(201).json({
+      message: "Post added successfully",
+      post: {
+        ...newPost,
+        id: newPost._id,
+      },
+    });
+  }
+);
 
 router.get("", (req, res, next) => {
   // backend pagination
@@ -80,24 +86,29 @@ router.get("/:id", (req, res, next) => {
   });
 });
 
-router.put("/:id", checkAuth, multer({ storage }).single("image"), (req, res, next) => {
-  // in default update, no file is uploaded, only an image url string
-  let imagePath = req.body.imagePath;
-  // if a file (not a url string) is included,
-  if (req.file) {
-    const url = `${req.protocol}://${req.get("host")}`;
-    imagePath = `${url}/images/${req.file.filename}`;
+router.put(
+  "/:id",
+  checkAuth,
+  multer({ storage }).single("image"),
+  (req, res, next) => {
+    // in default update, no file is uploaded, only an image url string
+    let imagePath = req.body.imagePath;
+    // if a file (not a url string) is included,
+    if (req.file) {
+      const url = `${req.protocol}://${req.get("host")}`;
+      imagePath = `${url}/images/${req.file.filename}`;
+    }
+    const post = new Post({
+      _id: req.body.id,
+      title: req.body.title,
+      content: req.body.content,
+      imagePath,
+    });
+    Post.updateOne({ _id: req.params.id }, post).then((result) => {
+      res.status(200).json({ message: "Update successful" });
+    });
   }
-  const post = new Post({
-    _id: req.body.id,
-    title: req.body.title,
-    content: req.body.content,
-    imagePath,
-  });
-  Post.updateOne({ _id: req.params.id }, post).then((result) => {
-    res.status(200).json({ message: "Update successful" });
-  });
-});
+);
 
 router.delete("/:id", checkAuth, (req, res, next) => {
   Post.deleteOne({ _id: req.params.id }).then((result) => {
