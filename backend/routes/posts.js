@@ -103,6 +103,7 @@ router.put(
       title: req.body.title,
       content: req.body.content,
       imagePath,
+      creator: req.userData.userId,
     });
     // only select the post created by the requesting user
     Post.updateOne(

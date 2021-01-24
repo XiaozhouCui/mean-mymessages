@@ -57,6 +57,7 @@ export class PostCreateComponent implements OnInit {
             title: postData.title,
             content: postData.content,
             imagePath: postData.imagePath,
+            creator: postData.creator,
           };
           // Reactive form set values
           this.form.setValue({
