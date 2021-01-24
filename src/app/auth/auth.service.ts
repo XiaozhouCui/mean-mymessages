@@ -10,6 +10,7 @@ export class AuthService {
 
   private isAuthenticated = false;
   private token: string; // store jwt from api
+  private tokenTimer: any; // returned value of setTimeout()
   private authStatusListener = new Subject<boolean>(); // push login status to other components
 
   getToken() {
@@ -38,11 +39,17 @@ export class AuthService {
   login(email: string, password: string) {
     const authData: AuthData = { email, password };
     this.http
-      .post<{ token: string }>('http://localhost:3000/api/user/login', authData)
+      .post<{ token: string, expiresIn: number }>('http://localhost:3000/api/user/login', authData)
       .subscribe((response) => {
         // console.log(response); // {token: "ufjkwqnepoirvcoiu"}
         this.token = response.token; // store token to be added in auth header
         if (response.token) {
+          const expiresInDuration = response.expiresIn;
+          // console.log(expiresInDuration); // 43200 (12 hours)
+          this.tokenTimer = setTimeout(() => {
+            // automatically logout after 12 hours
+            this.logout();
+          }, expiresInDuration * 1000)
           this.authStatusListener.next(true); // emit logged-in status to other components (e.g. header)
           this.isAuthenticated = true;
           // redirect upon login, using injected Router
@@ -55,6 +62,7 @@ export class AuthService {
     this.token = null; // clear token
     this.isAuthenticated = false; // toggle status
     this.authStatusListener.next(false); // push false value to other components
+    clearTimeout(this.tokenTimer); // clear the 12h timer for auto-logout
     this.router.navigate(['/']); // redirect to home page after log out
   }
 }
