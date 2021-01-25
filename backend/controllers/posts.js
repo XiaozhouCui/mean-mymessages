@@ -43,7 +43,7 @@ exports.updatePost = (req, res, next) => {
   // only select the post created by the requesting user
   Post.updateOne({ _id: req.params.id, creator: req.userData.userId }, post)
     .then((result) => {
-      if (result.nModified > 0)
+      if (result.n > 0)
         return res.status(200).json({ message: "Update successful" });
       return res.status(401).json({ message: "Not authorised" });
     })
