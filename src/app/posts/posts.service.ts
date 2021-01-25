@@ -4,7 +4,10 @@ import { Router } from '@angular/router';
 import { Subject } from 'rxjs';
 import { map } from 'rxjs/operators';
 
+import { environment } from '../../environments/environment';
 import { Post } from './post.model';
+
+const BACKEND_URL = environment.apiUrl + '/posts/';
 
 // Dependency Injection, make service available for entire app (root level)
 @Injectable({ providedIn: 'root' })
@@ -22,7 +25,7 @@ export class PostsService {
     // HttpClient uses RxJS, http.get() returns an observable, need to subscribe
     this.http
       .get<{ message: string; posts: any; maxPosts: number }>(
-        'http://localhost:3000/api/posts' + queryParams
+        BACKEND_URL + queryParams
       )
       // transform post data to include "_id" from mongodb
       .pipe(
@@ -64,7 +67,7 @@ export class PostsService {
       content: string;
       imagePath: string;
       creator: string;
-    }>('http://localhost:3000/api/posts/' + id);
+    }>(BACKEND_URL + id);
   }
 
   addPost(title: string, content: string, image: File) {
@@ -74,10 +77,7 @@ export class PostsService {
     postData.append('content', content);
     postData.append('image', image, title);
     this.http
-      .post<{ message: string; post: Post }>(
-        'http://localhost:3000/api/posts',
-        postData
-      )
+      .post<{ message: string; post: Post }>(BACKEND_URL, postData)
       .subscribe((res) => {
         // // foloowing code removed because posts were fetched with ngOnInit in post-list component
         // // api will return imagePath
@@ -112,25 +112,23 @@ export class PostsService {
     } else {
       postData = { id, title, content, imagePath: image, creator: null };
     }
-    this.http
-      .put('http://localhost:3000/api/posts/' + id, postData)
-      .subscribe((response) => {
-        // // foloowing code removed because posts were fetched with ngOnInit in post-list component
-        // const updatedPosts = [...this.posts];
-        // const oldPostIndex = updatedPosts.findIndex((p) => p.id === id);
-        // const post: Post = { id, title, content, imagePath: '' };
-        // updatedPosts[oldPostIndex] = post;
-        // this.posts = updatedPosts;
-        // // emit event to send out updated posts array
-        // this.postsUpdated.next([...this.posts]);
+    this.http.put(BACKEND_URL + id, postData).subscribe((response) => {
+      // // foloowing code removed because posts were fetched with ngOnInit in post-list component
+      // const updatedPosts = [...this.posts];
+      // const oldPostIndex = updatedPosts.findIndex((p) => p.id === id);
+      // const post: Post = { id, title, content, imagePath: '' };
+      // updatedPosts[oldPostIndex] = post;
+      // this.posts = updatedPosts;
+      // // emit event to send out updated posts array
+      // this.postsUpdated.next([...this.posts]);
 
-        // Redirect user back to posts list page with Angular Router
-        this.router.navigate(['/']);
-      });
+      // Redirect user back to posts list page with Angular Router
+      this.router.navigate(['/']);
+    });
   }
 
   deletePost(postId: string) {
-    return this.http.delete('http://localhost:3000/api/posts/' + postId);
+    return this.http.delete(BACKEND_URL + postId);
     // // foloowing code removed because the observable is subscribed in post-list.component onDelete()
     // .subscribe(() => {
     //   const updatedPosts = this.posts.filter((post) => post.id !== postId);
