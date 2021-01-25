@@ -22,7 +22,13 @@ router.post("/signup", (req, res, next) => {
         });
       })
       .catch((err) => {
-        res.status(500).json({ error: err });
+        console.log(err.code);
+        if (err.code == 11000) {
+          return res.status(400).json({
+            message: "Email already exists, please try another one",
+          });
+        }
+        res.status(400).json({ message: "Invalid authentication credentials", });
       });
   });
 });
@@ -57,7 +63,7 @@ router.post("/login", (req, res, next) => {
     })
     .catch((err) => {
       console.log(err);
-      return res.status(401).json({ message: "Auth failed" });
+      return res.status(401).json({ message: "Login failed" });
     });
 });
 

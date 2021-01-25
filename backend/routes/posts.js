@@ -33,7 +33,7 @@ router.post(
   "",
   checkAuth,
   multer({ storage }).single("image"),
-  async (req, res, next) => {
+  (req, res, next) => {
     const url = `${req.protocol}://${req.get("host")}`;
     const post = new Post({
       title: req.body.title,
@@ -41,15 +41,21 @@ router.post(
       imagePath: `${url}/images/${req.file.filename}`,
       creator: req.userData.userId, // req.userData was added in checkAuth middleware
     });
-    const newPost = await post.save();
-    // console.log(newPost);
-    res.status(201).json({
-      message: "Post added successfully",
-      post: {
-        ...newPost,
-        id: newPost._id,
-      },
-    });
+    post
+      .save()
+      .then((newPost) => {
+        // console.log(newPost);
+        res.status(201).json({
+          message: "Post added successfully",
+          post: {
+            ...newPost,
+            id: newPost._id,
+          },
+        });
+      })
+      .catch((error) => {
+        res.status(500).json({ message: "Creating a post failed!" });
+      });
   }
 );
 
@@ -73,17 +79,28 @@ router.get("", (req, res, next) => {
         posts: fetchedPosts,
         maxPosts: count,
       });
+    })
+    .catch((error) => {
+      res.status(500).json({
+        message: "Fetching posts failed",
+      });
     });
 });
 
 router.get("/:id", (req, res, next) => {
-  Post.findById(req.params.id).then((post) => {
-    if (post) {
-      res.status(200).json(post);
-    } else {
-      res.status(404).json({ message: "Post not found" });
-    }
-  });
+  Post.findById(req.params.id)
+    .then((post) => {
+      if (post) {
+        res.status(200).json(post);
+      } else {
+        res.status(404).json({ message: "Post not found" });
+      }
+    })
+    .catch((error) => {
+      res.status(500).json({
+        message: "Fetching post failed",
+      });
+    });
 });
 
 router.put(
@@ -106,14 +123,17 @@ router.put(
       creator: req.userData.userId,
     });
     // only select the post created by the requesting user
-    Post.updateOne(
-      { _id: req.params.id, creator: req.userData.userId },
-      post
-    ).then((result) => {
-      if (result.nModified > 0)
-        return res.status(200).json({ message: "Update successful" });
-      return res.status(401).json({ message: "Not authorised" });
-    });
+    Post.updateOne({ _id: req.params.id, creator: req.userData.userId }, post)
+      .then((result) => {
+        if (result.nModified > 0)
+          return res.status(200).json({ message: "Update successful" });
+        return res.status(401).json({ message: "Not authorised" });
+      })
+      .catch((error) => {
+        res.status(500).json({
+          message: "Couldn't update post!",
+        });
+      });
   }
 );
 
@@ -125,7 +145,11 @@ router.delete("/:id", checkAuth, (req, res, next) => {
         return res.status(201).json({ message: "Delete successful" });
       return res.status(401).json({ message: "Not authorised" });
     }
-  );
+  ).catch(error => {
+    res.status(500).json({
+      message: "Deleting post failed!",
+    });
+  })
 });
 
 module.exports = router;

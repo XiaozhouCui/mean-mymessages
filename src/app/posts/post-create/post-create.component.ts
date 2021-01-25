@@ -1,15 +1,24 @@
-import { PostsService } from '../posts.service';
-import { Component, EventEmitter, Output, OnInit } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Output,
+  OnInit,
+  OnDestroy,
+} from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { Post } from '../post.model';
 import { ActivatedRoute, ParamMap } from '@angular/router';
+import { Subscription } from 'rxjs';
+import { PostsService } from '../posts.service';
+import { Post } from '../post.model';
 import { mimeType } from './mime-type.validator';
+import { AuthService } from '../../auth/auth.service';
+
 @Component({
   selector: 'app-post-create',
   templateUrl: './post-create.component.html',
   styleUrls: ['./post-create.component.css'],
 })
-export class PostCreateComponent implements OnInit {
+export class PostCreateComponent implements OnInit, OnDestroy {
   enteredTitle = '';
   enteredContent = '';
   post: Post;
@@ -18,15 +27,22 @@ export class PostCreateComponent implements OnInit {
   imagePreview: string;
   private mode = 'create';
   private postId: string;
+  private authStatusSub: Subscription;
 
-  // Dependency Injection: add new instance of PostService class as a local property
-  // Dependency Injection: add new instance of ActivatedRoute class as a local property
+  // Dependency Injection to add local properties: postService and route
   constructor(
     public postsService: PostsService,
-    public route: ActivatedRoute
+    public route: ActivatedRoute,
+    private authService: AuthService
   ) {}
 
   ngOnInit() {
+    this.authStatusSub = this.authService
+      .getAuthStatusListener()
+      .subscribe((authStatus) => {
+        // if the login status changes, remove the spinner
+        this.isLoading = false;
+      });
     // reactive form
     this.form = new FormGroup({
       title: new FormControl(null, {
@@ -126,7 +142,7 @@ export class PostCreateComponent implements OnInit {
         this.postId,
         this.form.value.title,
         this.form.value.content,
-        this.form.value.image,
+        this.form.value.image
       );
     }
 
@@ -140,5 +156,9 @@ export class PostCreateComponent implements OnInit {
 
     // Once submitted, clear form inputs
     this.form.reset();
+  }
+
+  ngOnDestroy() {
+    this.authStatusSub.unsubscribe();
   }
 }

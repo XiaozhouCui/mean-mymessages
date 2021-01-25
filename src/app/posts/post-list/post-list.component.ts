@@ -69,16 +69,21 @@ export class PostListComponent implements OnInit, OnDestroy {
     this.postsService.getPosts(this.postsPerPage, this.currentPage);
   }
 
+  onDelete(postId: string) {
+    this.isLoading = true;
+    this.postsService.deletePost(postId).subscribe(
+      () => {
+        this.postsService.getPosts(this.postsPerPage, this.currentPage);
+      },
+      (error) => {
+        this.isLoading = false;
+      }
+    );
+  }
+
   ngOnDestroy() {
     // Subscriptions need to unsubscribe
     this.postsSub.unsubscribe();
     this.authStatusSub.unsubscribe();
-  }
-
-  onDelete(postId: string) {
-    this.isLoading = true;
-    this.postsService.deletePost(postId).subscribe(() => {
-      this.postsService.getPosts(this.postsPerPage, this.currentPage);
-    });
   }
 }
